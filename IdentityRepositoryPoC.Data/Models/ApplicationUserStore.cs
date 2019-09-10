@@ -1,5 +1,6 @@
 ﻿using IdentityRepositoryPoC.Data.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,8 +9,11 @@ using System.Threading.Tasks;
 
 namespace IdentityRepositoryPoC.Data.Models
 {
-    public class ApplicationUserStore : IUserStore<ApplicationUser>
+    public class ApplicationUserStore : IUserStore<ApplicationUser>, IUserPasswordStore<ApplicationUser>, IUserEmailStore<ApplicationUser>, IUserSecurityStampStore<ApplicationUser>
     {
+        private bool _disposedValue = false;
+        private readonly IUnitOfWork _unitOfWork;
+
         public ApplicationUserStore(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
@@ -94,8 +98,15 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.NormalizedUserName == user.NormalizedUserName);
-                return applicationUser.Id;
+                var applicationUser = await _unitOfWork.UserRepository.GetById(user.Id);
+                if (applicationUser != null)
+                {
+                    return applicationUser.Id;
+                }
+                else
+                {
+                    return user.Id;
+                }
             }
             catch (Exception ex)
             {
@@ -109,7 +120,15 @@ namespace IdentityRepositoryPoC.Data.Models
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
-                return applicationUser.UserName;
+                if (applicationUser != null)
+                {
+                    return applicationUser.UserName;
+                }
+                else
+                {
+                    return user.UserName;
+                }
+                
             }
             catch (Exception ex)
             {
@@ -123,9 +142,17 @@ namespace IdentityRepositoryPoC.Data.Models
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
-                applicationUser.NormalizedUserName = normalizedName;
-                _unitOfWork.UserRepository.Update(applicationUser);
-                await _unitOfWork.CommitAsync();
+                if (applicationUser != null)
+                {
+                    applicationUser.NormalizedUserName = normalizedName;
+                    _unitOfWork.UserRepository.Update(applicationUser);
+                    await _unitOfWork.CommitAsync();
+                }
+                else
+                {
+                    user.NormalizedUserName = normalizedName;
+                }
+                
             }
             catch (Exception ex)
             {
@@ -139,9 +166,17 @@ namespace IdentityRepositoryPoC.Data.Models
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
-                applicationUser.UserName = userName;
-                _unitOfWork.UserRepository.Update(applicationUser);
-                await _unitOfWork.CommitAsync();
+                
+                if (applicationUser != null)
+                {
+                    applicationUser.UserName = userName;
+                    _unitOfWork.UserRepository.Update(applicationUser);
+                    await _unitOfWork.CommitAsync();
+                }
+                else
+                {
+                    user.UserName = userName;
+                }
             }
             catch (Exception ex)
             {
@@ -165,9 +200,270 @@ namespace IdentityRepositoryPoC.Data.Models
             }
         }
 
-        #region IDisposable Support
-        private bool _disposedValue = false; // To detect redundant calls
-        private readonly IUnitOfWork _unitOfWork;
+        public async Task SetPasswordHashAsync(ApplicationUser user, string passwordHash, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
+                if (applicationUser != null)
+                {
+                    applicationUser.PasswordHash = passwordHash;
+                    _unitOfWork.UserRepository.Update(applicationUser);
+                    await _unitOfWork.CommitAsync();
+                }
+                else
+                {
+                    user.PasswordHash = passwordHash;
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<string> GetPasswordHashAsync(ApplicationUser user, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
+                if (applicationUser != null)
+                {
+                    return applicationUser.PasswordHash;
+                }
+                else
+                {
+                    return user.PasswordHash;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<bool> HasPasswordAsync(ApplicationUser user, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
+                if (applicationUser != null)
+                {
+                    return !string.IsNullOrEmpty(applicationUser.PasswordHash);
+                }
+                else
+                {
+                    return !string.IsNullOrEmpty(user.PasswordHash);
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task SetEmailAsync(ApplicationUser user, string email, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
+                if (applicationUser != null)
+                {
+                    applicationUser.Email = email;
+                    _unitOfWork.UserRepository.Update(applicationUser);
+                    await _unitOfWork.CommitAsync();
+                }
+                else
+                {
+                    user.Email = email;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<string> GetEmailAsync(ApplicationUser user, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
+                if (applicationUser != null)
+                {
+                    return applicationUser.Email;
+                }
+                else
+                {
+                    return user.Email;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<bool> GetEmailConfirmedAsync(ApplicationUser user, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
+                if (applicationUser != null)
+                {
+                    return applicationUser.EmailConfirmed;
+                }
+                else
+                {
+                    return user.EmailConfirmed;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task SetEmailConfirmedAsync(ApplicationUser user, bool confirmed, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
+                if (applicationUser != null)
+                {
+                    applicationUser.EmailConfirmed = confirmed;
+                    _unitOfWork.UserRepository.Update(applicationUser);
+                    await _unitOfWork.CommitAsync();
+                }
+                else
+                {
+                    user.EmailConfirmed = confirmed;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<ApplicationUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.NormalizedEmail == normalizedEmail);
+                return applicationUser;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<string> GetNormalizedEmailAsync(ApplicationUser user, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
+                if (applicationUser != null)
+                {
+                    return applicationUser.NormalizedEmail;
+                }
+                else
+                {
+                    return user.NormalizedEmail;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task SetNormalizedEmailAsync(ApplicationUser user, string normalizedEmail, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
+                if (applicationUser != null)
+                {
+                    applicationUser.NormalizedEmail = normalizedEmail;
+                    _unitOfWork.UserRepository.Update(applicationUser);
+                    await _unitOfWork.CommitAsync();
+                }
+                else
+                {
+                    user.NormalizedEmail = normalizedEmail;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task SetSecurityStampAsync(ApplicationUser user, string stamp, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
+                if (applicationUser != null)
+                {
+                    applicationUser.SecurityStamp = stamp;
+                    _unitOfWork.UserRepository.Update(applicationUser);
+                    await _unitOfWork.CommitAsync();
+                }
+                else
+                {
+                    user.SecurityStamp = stamp;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<string> GetSecurityStampAsync(ApplicationUser user, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
+                if (applicationUser != null)
+                {
+                    return applicationUser.SecurityStamp;
+                }
+                else
+                {
+                    return user.SecurityStamp;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -178,29 +474,15 @@ namespace IdentityRepositoryPoC.Data.Models
                     _unitOfWork.Dispose();
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
                 _disposedValue = true;
             }
         }
 
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~UserStore()
-        // {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
 
-        // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
         }
-        #endregion
 
         private IdentityError GetErrors(Exception ex)
         {
@@ -213,6 +495,6 @@ namespace IdentityRepositoryPoC.Data.Models
             return error;
         }
 
-
+        
     }
 }

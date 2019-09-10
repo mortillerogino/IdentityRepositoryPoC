@@ -1,7 +1,10 @@
+using IdentityRepositoryPoC.Data.Data;
+using IdentityRepositoryPoC.Data.Data.EntityFramework;
 using IdentityRepositoryPoC.Data.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.EntityFrameworkCore;
@@ -35,8 +38,14 @@ namespace IdentityRepositoryPoC
                 options.UseSqlServer(Configuration.GetConnectionString("ApplicationDb"));
             });
 
-            services.AddDefaultIdentity<ApplicationUser>()
-                .AddEntityFrameworkStores<ApplicationContext>();
+            
+
+            services.AddDefaultIdentity<ApplicationUser>();
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            services.AddScoped<IUserStore<ApplicationUser>, ApplicationUserStore>();
+            services.AddScoped<ApplicationUserStore>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
