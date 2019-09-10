@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace IdentityRepositoryPoC.Data.Data.EntityFramework
 {
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork, IDisposable
     {
         private readonly ApplicationContext _context;
 
@@ -37,6 +37,26 @@ namespace IdentityRepositoryPoC.Data.Data.EntityFramework
         public async Task<int> CommitAsync()
         {
             return await _context.SaveChangesAsync();
+        }
+
+        private bool _disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _context.Dispose();
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

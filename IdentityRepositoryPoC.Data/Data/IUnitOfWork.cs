@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace IdentityRepositoryPoC.Data.Data
 {
-    public interface IUnitOfWork
+    public interface IUnitOfWork : IDisposable
     {
         IUserRepository UserRepository { get; }
 

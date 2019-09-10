@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using IdentityRepositoryPoC.Data.Data;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,72 +10,178 @@ namespace IdentityRepositoryPoC.Data.Models
 {
     public class ApplicationUserStore : IUserStore<ApplicationUser>
     {
-        public Task<IdentityResult> CreateAsync(ApplicationUser user, CancellationToken cancellationToken)
+        public ApplicationUserStore(IUnitOfWork unitOfWork)
         {
-            throw new NotImplementedException();
+            _unitOfWork = unitOfWork;
         }
 
-        public Task<IdentityResult> DeleteAsync(ApplicationUser user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> CreateAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await _unitOfWork.UserRepository.Insert(user);
+                await _unitOfWork.CommitAsync();
+                return IdentityResult.Success;
+            }
+            catch (Exception ex)
+            {
+                var error = GetErrors(ex);
+                return IdentityResult.Failed(error);
+            }
         }
 
-        public Task<ApplicationUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
+        public async Task<IdentityResult> DeleteAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await _unitOfWork.UserRepository.Delete(user.Id);
+                await _unitOfWork.CommitAsync();
+                return IdentityResult.Success;
+            }
+            catch (Exception ex)
+            {
+                var error = GetErrors(ex);
+                return IdentityResult.Failed(error);
+            }
         }
 
-        public Task<ApplicationUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+        public async Task<ApplicationUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetById(userId);
+                return applicationUser;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
-        public Task<string> GetNormalizedUserNameAsync(ApplicationUser user, CancellationToken cancellationToken)
+        public async Task<ApplicationUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.NormalizedUserName == normalizedUserName);
+                return applicationUser;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
-        public Task<string> GetUserIdAsync(ApplicationUser user, CancellationToken cancellationToken)
+        public async Task<string> GetNormalizedUserNameAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetById(user.Id);
+                return applicationUser.NormalizedUserName;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
-        public Task<string> GetUserNameAsync(ApplicationUser user, CancellationToken cancellationToken)
+        public async Task<string> GetUserIdAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.NormalizedUserName == user.NormalizedUserName);
+                return applicationUser.Id;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
-        public Task SetNormalizedUserNameAsync(ApplicationUser user, string normalizedName, CancellationToken cancellationToken)
+        public async Task<string> GetUserNameAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
+                return applicationUser.UserName;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
-        public Task SetUserNameAsync(ApplicationUser user, string userName, CancellationToken cancellationToken)
+        public async Task SetNormalizedUserNameAsync(ApplicationUser user, string normalizedName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
+                applicationUser.NormalizedUserName = normalizedName;
+                _unitOfWork.UserRepository.Update(applicationUser);
+                await _unitOfWork.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
-        public Task<IdentityResult> UpdateAsync(ApplicationUser user, CancellationToken cancellationToken)
+        public async Task SetUserNameAsync(ApplicationUser user, string userName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
+                applicationUser.UserName = userName;
+                _unitOfWork.UserRepository.Update(applicationUser);
+                await _unitOfWork.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<IdentityResult> UpdateAsync(ApplicationUser user, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                _unitOfWork.UserRepository.Update(user);
+                await _unitOfWork.CommitAsync();
+                return IdentityResult.Success;
+            }
+            catch (Exception ex)
+            {
+                var error = GetErrors(ex);
+                return IdentityResult.Failed(error);
+            }
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
+        private bool _disposedValue = false; // To detect redundant calls
+        private readonly IUnitOfWork _unitOfWork;
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects).
+                    _unitOfWork.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
 
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 
@@ -94,5 +201,18 @@ namespace IdentityRepositoryPoC.Data.Models
             // GC.SuppressFinalize(this);
         }
         #endregion
+
+        private IdentityError GetErrors(Exception ex)
+        {
+            var error = new IdentityError()
+            {
+                Code = ex.GetType().Name,
+                Description = ex.Message
+            };
+
+            return error;
+        }
+
+
     }
 }
