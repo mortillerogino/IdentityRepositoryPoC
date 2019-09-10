@@ -38,14 +38,20 @@ namespace IdentityRepositoryPoC
                 options.UseSqlServer(Configuration.GetConnectionString("ApplicationDb"));
             });
 
-            
-
             services.AddDefaultIdentity<ApplicationUser>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-
             services.AddScoped<IUserStore<ApplicationUser>, ApplicationUserStore>();
             services.AddScoped<ApplicationUserStore>();
+
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequiredLength = 4;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
