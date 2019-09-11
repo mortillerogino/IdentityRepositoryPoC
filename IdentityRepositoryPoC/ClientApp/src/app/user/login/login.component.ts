@@ -26,8 +26,7 @@ export class LoginComponent implements OnInit {
     this.service.login(form.value).subscribe(
       (res: any) => {
         localStorage.setItem('token', res.token);
-        //this.router.navigateByUrl('/home');
-        this.toastr.success("TOKEN: " + res.token, "Authentication Success");
+        this.router.navigateByUrl('/home');
       },
       err => {
         if (err.status == 400) {

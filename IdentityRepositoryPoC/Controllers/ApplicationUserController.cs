@@ -16,13 +16,13 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace IdentityRepositoryPoC.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ApplicationUserController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<AppSettings> _appSettings;
+        private const string _iSSUER = "THIS SITE";
 
         public ApplicationUserController(UserManager<ApplicationUser> userManager, IOptions<AppSettings> appSettings)
         {
@@ -30,11 +30,10 @@ namespace IdentityRepositoryPoC.Controllers
             _appSettings = appSettings;
         }
 
-        [AllowAnonymous]
         [HttpPost]
-        [Route("Register")]
+        [Route("[action]")]
         //POST : /api/ApplicationUser/Register
-        public async Task<IActionResult> RegisterUser(ApplicationUserDto dto)
+        public async Task<IActionResult> Register(ApplicationUserDto dto)
         {
             var applicationUser = new ApplicationUser()
             {
@@ -54,11 +53,10 @@ namespace IdentityRepositoryPoC.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpPost]
-        [Route("Login")]
+        [Route("[action]")]
         //POST : /api/ApplicationUser/Login
-        public async Task<IActionResult> LoginUser(ApplicationUserDto dto)
+        public async Task<IActionResult> Login(ApplicationUserDto dto)
         {
             var user = await _userManager.FindByNameAsync(dto.UserName);
             if (user != null)
@@ -69,7 +67,8 @@ namespace IdentityRepositoryPoC.Controllers
                     {
                         Subject = new ClaimsIdentity(new Claim[]
                         {
-                            new Claim("UserID", user.Id.ToString())
+                            new Claim("UserID", user.Id.ToString()),
+                            //new Claim(ClaimTypes.Role, "Administrator", ClaimValueTypes.String, ISSUER)
                         }),
                         Expires = DateTime.UtcNow.AddMinutes(30),
                         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.Value.Secret)), SecurityAlgorithms.HmacSha256Signature)
@@ -78,7 +77,7 @@ namespace IdentityRepositoryPoC.Controllers
                     var tokenHandler = new JwtSecurityTokenHandler();
                     var securityToken = tokenHandler.CreateToken(tokenDescriptor);
                     var token = tokenHandler.WriteToken(securityToken);
-                    return Ok(new { token });
+                    return Ok( new { token });
                 }
                 else
                 {
@@ -90,5 +89,25 @@ namespace IdentityRepositoryPoC.Controllers
                 return BadRequest("Username does not exit.");
             }
         }
+
+        
+        [HttpGet]
+        [Authorize]
+        //Get : /api/ApplicationUser
+        public async Task<IActionResult> GetUser()
+        {
+            var claims = User.Claims;
+            var currentUserId = claims.First(c => c.Type == "UserID").Value;
+            var user = await _userManager.FindByIdAsync(currentUserId);
+
+            return Ok(new
+            {
+                user.Id,
+                user.UserName,
+                user.Email
+            });
+        }
+
+
     }
 }

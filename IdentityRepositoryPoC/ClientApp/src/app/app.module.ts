@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { ToastrModule } from 'ngx-toastr';
 
@@ -14,6 +14,8 @@ import { RegisterComponent } from './user/register/register.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { UserComponent } from './user/user.component';
 import { LoginComponent } from './user/login/login.component';
+import { UserService } from './shared/user.service';
+import { AuthInterceptor } from './auth/auth.interceptor';
 
 @NgModule({
   declarations: [
@@ -36,11 +38,22 @@ import { LoginComponent } from './user/login/login.component';
       progressBar: true
     }),
     RouterModule.forRoot([
-      { path: '', component: UserComponent, pathMatch: 'full' },
-      { path: 'register', component: RegisterComponent },
+      { path: '', redirectTo: 'user/login', pathMatch: 'full' },
+      {
+        path: 'user', component: UserComponent,
+        children: [
+          { path: 'registration', component: RegisterComponent },
+          { path: 'login', component: LoginComponent }
+        ]
+      },
+      { path: 'home', component: HomeComponent }
     ])
   ],
-  providers: [],
+  providers: [UserService, {
+    provide: HTTP_INTERCEPTORS,
+    useClass: AuthInterceptor,
+    multi: true
+  }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

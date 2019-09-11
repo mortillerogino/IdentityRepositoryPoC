@@ -43,4 +43,8 @@ export class UserService {
   login(formData) {
     return this.http.post(this.baseUrl + 'api/ApplicationUser/Login', formData);
   }
+
+  getUserProfile() {
+    return this.http.get(this.baseUrl + 'api/ApplicationUser');
+  }
 }
