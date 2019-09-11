@@ -16,6 +16,7 @@ import { UserComponent } from './user/user.component';
 import { LoginComponent } from './user/login/login.component';
 import { UserService } from './shared/user.service';
 import { AuthInterceptor } from './auth/auth.interceptor';
+import { AuthGuard } from './auth/auth.guard';
 
 @NgModule({
   declarations: [
@@ -46,7 +47,7 @@ import { AuthInterceptor } from './auth/auth.interceptor';
           { path: 'login', component: LoginComponent }
         ]
       },
-      { path: 'home', component: HomeComponent }
+      { path: 'home', component: HomeComponent, canActivate: [AuthGuard] }
     ])
   ],
   providers: [UserService, {
