@@ -94,7 +94,7 @@ namespace IdentityRepositoryPoC.Controllers
             }
             else
             {
-                return BadRequest("Username does not exit.");
+                return BadRequest("Username does not exist.");
             }
         }
 
