@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using IdentityRepositoryPoC.Data.Data;
 using IdentityRepositoryPoC.Data.Models;
 using IdentityRepositoryPoC.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -20,12 +21,14 @@ namespace IdentityRepositoryPoC.Controllers
     [ApiController]
     public class ApplicationUserController : ControllerBase
     {
+        private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<AppSettings> _appSettings;
         private const string _iSSUER = "THIS SITE";
 
-        public ApplicationUserController(UserManager<ApplicationUser> userManager, IOptions<AppSettings> appSettings)
+        public ApplicationUserController(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IOptions<AppSettings> appSettings)
         {
+            _unitOfWork = unitOfWork;
             _userManager = userManager;
             _appSettings = appSettings;
         }
@@ -38,12 +41,19 @@ namespace IdentityRepositoryPoC.Controllers
             var applicationUser = new ApplicationUser()
             {
                 UserName = dto.UserName,
-                Email = dto.Email
+                Email = dto.Email,
             };
 
             try
             {
                 var result = await _userManager.CreateAsync(applicationUser, dto.Password);
+                await _userManager.AddClaimAsync(applicationUser, new Claim("UserID", applicationUser.Id.ToString()));
+
+                if (dto.IsAdmin)
+                {
+                    await _userManager.AddClaimAsync(applicationUser, new Claim(ClaimTypes.Role, "Administrator", ClaimValueTypes.String, _iSSUER));
+                }
+
                 return Ok(result);
             }
             catch (Exception ex)
@@ -63,13 +73,11 @@ namespace IdentityRepositoryPoC.Controllers
             {
                 if (await _userManager.CheckPasswordAsync(user, dto.Password))
                 {
+                    var claims = await _userManager.GetClaimsAsync(user);
+
                     var tokenDescriptor = new SecurityTokenDescriptor
                     {
-                        Subject = new ClaimsIdentity(new Claim[]
-                        {
-                            new Claim("UserID", user.Id.ToString()),
-                            //new Claim(ClaimTypes.Role, "Administrator", ClaimValueTypes.String, ISSUER)
-                        }),
+                        Subject = new ClaimsIdentity(claims),
                         Expires = DateTime.UtcNow.AddMinutes(30),
                         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.Value.Secret)), SecurityAlgorithms.HmacSha256Signature)
                     };
@@ -94,7 +102,7 @@ namespace IdentityRepositoryPoC.Controllers
         [HttpGet]
         [Authorize]
         //Get : /api/ApplicationUser
-        public async Task<IActionResult> GetUser()
+        public async Task<IActionResult> GetCurrentUser()
         {
             var claims = User.Claims;
             var currentUserId = claims.First(c => c.Type == "UserID").Value;
@@ -106,6 +114,41 @@ namespace IdentityRepositoryPoC.Controllers
                 user.UserName,
                 user.Email
             });
+        }
+
+
+        [HttpGet]
+        [Authorize(Roles = "Administrator")]
+        [Route("All")]
+        //Get : /api/ApplicationUser/All
+        public async Task<IActionResult> GetAllUsers()
+        {
+            try
+            {
+                var users = await _unitOfWork.UserRepository.Get();
+
+                if (users.Count == 0)
+                {
+                    return BadRequest();
+                }
+
+                var userDtos = new List<ApplicationUserDto>();
+                foreach (ApplicationUser u in users)
+                {
+                    userDtos.Add(new ApplicationUserDto
+                    {
+                        UserName = u.UserName,
+                        Email = u.Email,
+                    });
+                }
+
+                return Ok(userDtos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+            
         }
 
 

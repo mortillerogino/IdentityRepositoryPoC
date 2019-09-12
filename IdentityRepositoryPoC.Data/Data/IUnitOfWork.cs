@@ -8,6 +8,7 @@ namespace IdentityRepositoryPoC.Data.Data
     public interface IUnitOfWork : IDisposable
     {
         IUserRepository UserRepository { get; }
+        IUserClaimRepository UserClaimRepository { get; }
 
         void Commit();
 

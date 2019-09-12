@@ -15,6 +15,7 @@ export class RegisterComponent implements OnInit {
     this.service.formModel.reset();
   }
 
+
   onSubmit() {
     this.service.register().subscribe(
       (res: any) => {
@@ -39,6 +40,11 @@ export class RegisterComponent implements OnInit {
         console.log(err);
       }
     )
+  }
+
+  onChange(checked: boolean) {
+    this.service.isAdmin = checked;
+    
   }
 
 }

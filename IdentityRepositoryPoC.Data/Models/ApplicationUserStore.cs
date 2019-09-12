@@ -2,14 +2,22 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace IdentityRepositoryPoC.Data.Models
 {
-    public class ApplicationUserStore : IUserStore<ApplicationUser>, IUserPasswordStore<ApplicationUser>, IUserEmailStore<ApplicationUser>, IUserSecurityStampStore<ApplicationUser>
+    public class ApplicationUserStore : IUserStore<ApplicationUser>, 
+        IUserPasswordStore<ApplicationUser>, 
+        IUserEmailStore<ApplicationUser>, 
+        IUserSecurityStampStore<ApplicationUser>,
+        IUserClaimStore<ApplicationUser>
+        
     {
         private bool _disposedValue = false;
         private readonly IUnitOfWork _unitOfWork;
@@ -24,6 +32,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 await _unitOfWork.UserRepository.Insert(user);
                 await _unitOfWork.CommitAsync();
                 return IdentityResult.Success;
@@ -40,6 +49,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 await _unitOfWork.UserRepository.Delete(user.Id);
                 await _unitOfWork.CommitAsync();
                 return IdentityResult.Success;
@@ -56,6 +66,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetById(userId);
                 return applicationUser;
             }
@@ -70,6 +81,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.NormalizedUserName == normalizedUserName);
                 return applicationUser;
             }
@@ -84,6 +96,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetById(user.Id);
                 return applicationUser.NormalizedUserName;
             }
@@ -98,6 +111,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetById(user.Id);
                 if (applicationUser != null)
                 {
@@ -119,6 +133,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
                 if (applicationUser != null)
                 {
@@ -141,6 +156,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
                 if (applicationUser != null)
                 {
@@ -165,6 +181,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
                 
                 if (applicationUser != null)
@@ -189,6 +206,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 _unitOfWork.UserRepository.Update(user);
                 await _unitOfWork.CommitAsync();
                 return IdentityResult.Success;
@@ -205,6 +223,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
                 if (applicationUser != null)
                 {
@@ -229,6 +248,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
                 if (applicationUser != null)
                 {
@@ -250,6 +270,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
                 if (applicationUser != null)
                 {
@@ -272,6 +293,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
                 if (applicationUser != null)
                 {
@@ -296,6 +318,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
                 if (applicationUser != null)
                 {
@@ -318,6 +341,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
                 if (applicationUser != null)
                 {
@@ -340,6 +364,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
                 if (applicationUser != null)
                 {
@@ -364,6 +389,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.NormalizedEmail == normalizedEmail);
                 return applicationUser;
             }
@@ -378,6 +404,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
                 if (applicationUser != null)
                 {
@@ -400,6 +427,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
                 if (applicationUser != null)
                 {
@@ -424,6 +452,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
                 if (applicationUser != null)
                 {
@@ -448,6 +477,7 @@ namespace IdentityRepositoryPoC.Data.Models
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
                 var applicationUser = await _unitOfWork.UserRepository.GetFirstOrDefault(u => u.Id == user.Id);
                 if (applicationUser != null)
                 {
@@ -463,6 +493,132 @@ namespace IdentityRepositoryPoC.Data.Models
             {
                 throw ex;
             }
+        }
+
+        public async Task<IList<Claim>> GetClaimsAsync(ApplicationUser user, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
+                var userClaims = await _unitOfWork.UserClaimRepository.Get(c => c.UserId == user.Id);
+
+                var claims = new ConcurrentBag<Claim>();
+
+                if (userClaims.Count > 0)
+                {
+                    Parallel.ForEach(userClaims, currentUserClaim =>
+                    {
+                        claims.Add(currentUserClaim.ToClaim());
+                    });
+                }
+
+                return claims.ToList();
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task AddClaimsAsync(ApplicationUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
+
+                var taskList = new List<Task>();
+
+                foreach (Claim c in claims)
+                {
+                    var userClaim = new ApplicationUserClaim
+                    {
+                        UserId = user.Id,
+                        ClaimType = c.Type,
+                        ClaimValue = c.Value
+                    };
+
+                    taskList.Add(_unitOfWork.UserClaimRepository.Insert(userClaim));
+                }
+
+                await Task.WhenAll(taskList);
+                await _unitOfWork.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        public async Task ReplaceClaimAsync(ApplicationUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
+                var matches = await _unitOfWork.UserClaimRepository.Get(uc => uc.UserId == user.Id && uc.ClaimType == claim.Type && uc.ClaimValue == claim.Value);
+
+                foreach (ApplicationUserClaim uc in matches)
+                {
+                    uc.ClaimValue = newClaim.Value;
+                    uc.ClaimType = newClaim.Type;
+                }
+
+                await _unitOfWork.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task RemoveClaimsAsync(ApplicationUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                ThrowIfDisposed();
+
+                var taskList = new List<Task>();
+
+                foreach (var claim in claims)
+                {
+                    var matchedClaims = await _unitOfWork.UserClaimRepository.Get(uc => uc.UserId.Equals(user.Id) && uc.ClaimValue == claim.Value && uc.ClaimType == claim.Type);
+                    foreach (var c in matchedClaims)
+                    {
+                        taskList.Add(_unitOfWork.UserClaimRepository.Delete(c));
+                    }
+                }
+
+                await Task.WhenAll(taskList);
+                await _unitOfWork.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        public async Task<IList<ApplicationUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+
+            var matchingUserClaims = await _unitOfWork.UserClaimRepository.Get(uc => uc.ClaimType == claim.Type && uc.ClaimValue == claim.Value);
+
+            var taskList = new List<Task<ApplicationUser>>();
+
+            foreach (ApplicationUserClaim uc in matchingUserClaims)
+            {
+                taskList.Add(_unitOfWork.UserRepository.GetById(uc.UserId));
+            }
+
+            var result = await Task.WhenAll(taskList.ToList());
+            return result;
         }
 
         protected virtual void Dispose(bool disposing)
@@ -482,6 +638,7 @@ namespace IdentityRepositoryPoC.Data.Models
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private IdentityError GetErrors(Exception ex)
@@ -495,6 +652,13 @@ namespace IdentityRepositoryPoC.Data.Models
             return error;
         }
 
+        private void ThrowIfDisposed()
+        {
+            if (_disposedValue)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+        }
         
     }
 }

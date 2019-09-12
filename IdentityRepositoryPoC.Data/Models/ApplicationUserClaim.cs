@@ -5,7 +5,7 @@ using System.Text;
 
 namespace IdentityRepositoryPoC.Data.Models
 {
-    public class ApplicationUser : IdentityUser
+    public class ApplicationUserClaim : IdentityUserClaim<string>
     {
     }
 }

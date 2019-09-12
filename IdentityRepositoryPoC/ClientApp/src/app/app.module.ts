@@ -17,6 +17,9 @@ import { LoginComponent } from './user/login/login.component';
 import { UserService } from './shared/user.service';
 import { AuthInterceptor } from './auth/auth.interceptor';
 import { AuthGuard } from './auth/auth.guard';
+import { UserListComponent } from './user/user-list/user-list.component';
+import { ForbiddenComponent } from './auth/forbidden/forbidden.component';
+import { UnauthorizedComponent } from './auth/unauthorized/unauthorized.component';
 
 @NgModule({
   declarations: [
@@ -27,7 +30,10 @@ import { AuthGuard } from './auth/auth.guard';
     FetchDataComponent,
     RegisterComponent,
     UserComponent,
-    LoginComponent
+    LoginComponent,
+    UserListComponent,
+    ForbiddenComponent,
+    UnauthorizedComponent,
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -47,7 +53,10 @@ import { AuthGuard } from './auth/auth.guard';
           { path: 'login', component: LoginComponent }
         ]
       },
-      { path: 'home', component: HomeComponent, canActivate: [AuthGuard] }
+      { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
+      { path: 'user/all', component: UserListComponent, canActivate: [AuthGuard] },
+      { path: 'error/401', component: UnauthorizedComponent },
+      { path: 'error/403', component: ForbiddenComponent },
     ])
   ],
   providers: [UserService, {

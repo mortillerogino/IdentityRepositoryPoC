@@ -18,8 +18,14 @@ export class AuthInterceptor implements HttpInterceptor {
         tap(
           succ => { },
           err => {
-            if (err.status = 400) {
+            if (err.status === 400) {
               this.router.navigateByUrl('user/login');
+            }
+            else if (err.status === 401) {
+              this.router.navigateByUrl('error/401');
+            }
+            else if (err.status === 403) {
+              this.router.navigateByUrl('error/403');
             }
           }
         )

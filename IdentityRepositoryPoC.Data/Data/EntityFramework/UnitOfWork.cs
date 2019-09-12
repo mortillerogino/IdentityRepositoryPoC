@@ -29,6 +29,20 @@ namespace IdentityRepositoryPoC.Data.Data.EntityFramework
             }
         }
 
+        private IUserClaimRepository _userClaimRepository;
+        public IUserClaimRepository UserClaimRepository
+        {
+            get
+            {
+                if (_userClaimRepository == null)
+                {
+                    _userClaimRepository = new UserClaimRepository(_context);
+                }
+
+                return _userClaimRepository;
+            }
+        }
+
         public void Commit()
         {
             _context.SaveChanges();

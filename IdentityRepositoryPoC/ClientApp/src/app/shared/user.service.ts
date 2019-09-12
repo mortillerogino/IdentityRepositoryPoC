@@ -1,22 +1,24 @@
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { FormBuilder, Validators, FormGroup, FormControl } from '@angular/forms';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
 
+  isAdmin: boolean = false;
+
   constructor(private http: HttpClient, private fb: FormBuilder, @Inject('BASE_URL') private baseUrl: string) { }
 
   formModel = this.fb.group({
     UserName: ['', Validators.required],
     Email: ['', Validators.email],
-    FullName: [''],
     Passwords: this.fb.group({
       Password: ['', [Validators.required, Validators.minLength(4)]],
       ConfirmPassword: ['', [Validators.required, Validators.minLength(4)]],
-    }, { validator: this.comparePasswords })
+    }, { validator: this.comparePasswords }),
+    
   });
 
   comparePasswords(fb: FormGroup) {
@@ -31,11 +33,14 @@ export class UserService {
     }
   }
 
+  
+
   register() {
     var body = {
       UserName: this.formModel.value.UserName,
       Email: this.formModel.value.Email,
       Password: this.formModel.value.Passwords.Password,
+      IsAdmin: this.isAdmin
     }
     return this.http.post(this.baseUrl + 'api/ApplicationUser/Register', body);
   }
@@ -46,5 +51,9 @@ export class UserService {
 
   getUserProfile() {
     return this.http.get(this.baseUrl + 'api/ApplicationUser');
+  }
+
+  getUsers() {
+    return this.http.get(this.baseUrl + 'api/ApplicationUser/All');
   }
 }

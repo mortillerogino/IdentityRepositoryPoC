@@ -58,7 +58,7 @@ namespace IdentityRepositoryPoC.Data.Data.EntityFramework
 
         public int GetCount()
         {
-            throw new NotImplementedException();
+            return _dbSet.Count();
         }
 
         public async Task<TEntity> GetFirstOrDefault(Expression<Func<TEntity, bool>> filter = null, params Expression<Func<TEntity, object>>[] includes)

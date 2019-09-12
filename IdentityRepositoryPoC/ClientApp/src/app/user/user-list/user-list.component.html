@@ -1,0 +1,19 @@
+<div class="container vh-100">
+  <div class="row align-items-center h-100">
+    <table class="table table-sm">
+      <thead>
+        <tr class="bg-primary text-ligh">
+          <th>Username</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let u of this.users">
+          <td>{{u.userName}}</td>
+          <td>{{u.email}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+</div>
